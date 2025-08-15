@@ -19,8 +19,34 @@ function Form({ route, method }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const name = method === "login" ? "Sign In" : "Sign Up";
+
+  // Client-side validation
+  const validate = () => {
+    const newErrors = {};
+    if (!username?.trim()) newErrors.username = "Username is required";
+    if (!password) newErrors.password = "Password is required";
+    else {
+      if (password.length < 8)
+        newErrors.password = "Password must be at least 8 characters";
+      else if (/^\d+$/.test(password))
+        newErrors.password = "Password cannot be entirely numeric";
+    }
+    if (method !== "login" && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  useEffect(() => {
+    // Re-validate when credentials change (lightweight)
+    validate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, password, email, firstName, lastName, method]);
 
   useEffect(() => {
     gsap.fromTo(
@@ -82,6 +108,11 @@ function Form({ route, method }) {
     setLoading(true);
 
     try {
+      // client-side validation first
+      if (!validate()) {
+        setLoading(false);
+        return;
+      }
       const payload = { username, password };
       if (method !== "login") {
         if (email) payload.email = email;
@@ -94,7 +125,8 @@ function Form({ route, method }) {
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
         navigate("/home");
       } else {
-        navigate("/login");
+        // Registration success: show popup, then navigate to login
+        setShowSuccess(true);
       }
     } catch (error) {
       // Extract and show helpful server errors
@@ -103,20 +135,17 @@ function Form({ route, method }) {
       let message = "An error occurred";
       if (status) message += ` (HTTP ${status})`;
       if (data) {
-        if (typeof data === "string") {
-          message += `\n${data}`;
-        } else if (typeof data === "object") {
-          const parts = [];
+        if (typeof data === "object") {
+          const serverErrors = {};
           for (const [key, val] of Object.entries(data)) {
-            if (Array.isArray(val)) {
-              parts.push(`${key}: ${val.join(", ")}`);
-            } else if (typeof val === "string") {
-              parts.push(`${key}: ${val}`);
-            } else {
-              parts.push(`${key}: ${JSON.stringify(val)}`);
-            }
+            const text = Array.isArray(val) ? val.join(", ") : (typeof val === "string" ? val : JSON.stringify(val));
+            serverErrors[key] = text;
           }
+          setErrors((prev) => ({ ...prev, ...serverErrors }));
+          const parts = Object.entries(serverErrors).map(([k, v]) => `${k}: ${v}`);
           if (parts.length) message += `\n${parts.join("\n")}`;
+        } else if (typeof data === "string") {
+          message += `\n${data}`;
         }
       } else if (error?.message) {
         message += `\n${error.message}`;
@@ -135,6 +164,27 @@ function Form({ route, method }) {
           : "bg-gradient-to-br from-gray-900 via-gray-800 to-black"
       }`}
     >
+      {/* Success Modal */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className={`w-full max-w-sm rounded-xl p-6 shadow-xl ${
+            theme === "light" ? "bg-white text-gray-800" : "bg-gray-900 text-gray-100"
+          }`}>
+            <h3 className="text-xl font-semibold mb-2">Registration Successful</h3>
+            <p className="mb-4">Your account has been created successfully. You can now sign in.</p>
+            <button
+              onClick={() => navigate("/login")}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition ${
+                theme === "light"
+                  ? "text-white bg-blue-600 hover:bg-blue-700"
+                  : "text-white bg-purple-600 hover:bg-purple-700"
+              }`}
+            >
+              Go to Sign In
+            </button>
+          </div>
+        </div>
+      )}
       <div
         ref={cardRef}
         className={`p-8 rounded-2xl shadow-2xl w-full max-w-md transition-colors duration-500 ${
@@ -182,6 +232,9 @@ function Form({ route, method }) {
               placeholder="Enter your Username"
               required
             />
+            {errors.username && (
+              <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+            )}
           </div>
 
           {method !== "login" && (
@@ -202,6 +255,9 @@ function Form({ route, method }) {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -260,6 +316,9 @@ function Form({ route, method }) {
               placeholder="Put in your password"
               required
             />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
           </div>
 
           {/* Remember Me & Forgot Password */}
@@ -273,6 +332,7 @@ function Form({ route, method }) {
                 ? "text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 : "text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
             }`}
+            disabled={loading || Object.keys(errors).length > 0}
           >
             {name}
           </button>

@@ -11,6 +11,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [username, setUsername] = useState("");
 
+
   useEffect(() => {
     const tl = gsap.timeline();
     
@@ -143,6 +144,16 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               Dashboard
             </a>
             <a 
+              href="/logout" 
+              className={`font-medium transition-all duration-200 hover:scale-105 ${
+                darkMode 
+                  ? 'text-gray-300 hover:text-red-400' 
+                  : 'text-gray-700 hover:text-red-600'
+              }`}
+            >
+              logout
+            </a>
+            <a 
               href="/feed" 
               className={`font-medium transition-all duration-200 hover:scale-105 ${
                 darkMode 
@@ -265,6 +276,16 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               } rounded-lg`}
             >
               Dashboard
+            </a>
+            <a 
+              href="/logout" 
+              className={`block px-4 py-2 font-medium transition-colors ${
+                darkMode 
+                  ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' 
+                  : 'text-gray-700 hover:text-red-600 hover:bg-gray-50'
+              } rounded-lg`}
+            >
+              logout
             </a>
             <a 
               href="/feed" 
