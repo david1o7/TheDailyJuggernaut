@@ -1,0 +1,44 @@
+# Global
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite3
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Django
+/staticfiles/
+/media/
+
+# Backend
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/media/
+backend/staticfiles/
+backend/__pycache__/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Build artifacts
+*.bak
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.swp
