@@ -1,6 +1,7 @@
 # DailyJuggernaut
 
 Full-stack app (Django REST API + React/Vite frontend).
+to see the project : thedailyjuggernaut-1.onrender.com 
 
 ## Structure
 - `backend/` — Django API (DRF, JWT, CORS, WhiteNoise)
