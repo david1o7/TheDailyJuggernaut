@@ -1,3 +1,5 @@
+<img width="953" height="419" alt="image" src="https://github.com/user-attachments/assets/bc9c28b9-cdd1-4119-b5c4-c0de58a28fe8" />
+
 # DailyJuggernaut
 
 Full-stack app (Django REST API + React/Vite frontend).
